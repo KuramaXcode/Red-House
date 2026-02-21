@@ -15,7 +15,7 @@
     .wrap{max-width:1100px;margin:0 auto;padding:0 16px 40px}
     .hint{font-size:13px;color:#c9c2ef;margin:8px 0}
     .card{border:1px solid #ffffff1f;background:#00000040;border-radius:16px;padding:12px}
-    #stage{display:block;width:100%;height:min(72vh,720px);border-radius:16px}
+    #stage{display:block;width:100%;height:min(72vh,720px);border-radius:16px;touch-action:none}
     .note{margin-top:10px;font-size:13px;color:#c9c2ef}
     a{color:var(--cyan)}
     .error{margin-top:10px;border:1px solid #ff8a8a55;padding:10px;border-radius:10px;background:#3a121244;color:#ffdede;display:none}
@@ -47,22 +47,27 @@
         const canvas = document.getElementById('stage');
         const app = new PIXI.Application({
           view: canvas,
-          resizeTo: canvas.parentElement,
           backgroundAlpha: 0,
           antialias: false,
-          resolution: window.devicePixelRatio || 1,
-          autoDensity: true
+          resolution: Math.min(window.devicePixelRatio || 1, 2),
+          autoDensity: true,
+          width: Math.max(320, canvas.clientWidth || 800),
+          height: Math.max(320, canvas.clientHeight || 520)
         });
 
         const world = new PIXI.Container();
         app.stage.addChild(world);
 
+        const debugDot = new PIXI.Graphics();
+        debugDot.beginFill(0xff4d6d, 1).drawCircle(0,0,6).endFill();
+        app.stage.addChild(debugDot);
+
         const TILE_W=32, TILE_H=16;
         const iso=(i,j)=>({x:(i-j)*(TILE_W/2),y:(i+j)*(TILE_H/2)});
 
         function center(){
-          world.x = app.renderer.width/2;
-          world.y = app.renderer.height/2 + 60;
+          world.x = Math.round(app.renderer.width/2);
+          world.y = Math.round(app.renderer.height/2 - 30);
         }
         center();
 
@@ -78,7 +83,7 @@
         const floor=new PIXI.Container(); world.addChild(floor);
         for(let i=0;i<12;i++)for(let j=0;j<10;j++){
           const p=iso(i,j), g=new PIXI.Graphics();
-          const base=((i+j)%2===0)?0x241a52:0x1a123f;
+          const base=((i+j)%2===0)?0x3a2d76:0x2b205a;
           g.beginFill(base,1)
             .lineStyle(1,0x6f5bb4,0.6)
             .moveTo(0,-TILE_H/2).lineTo(TILE_W/2,0).lineTo(0,TILE_H/2).lineTo(-TILE_W/2,0).closePath().endFill();
@@ -115,7 +120,22 @@
 
         let t=0; app.ticker.add(()=>{t+=0.06;worker.y=58+Math.sin(t)*1.4;consoleGlow.alpha=0.08+(Math.sin(t*0.6)+1)*0.02;});
 
-        window.addEventListener('resize',center);
+        const container = canvas.parentElement;
+        const resize = () => {
+          const w = Math.max(320, Math.floor(canvas.clientWidth || container.clientWidth || 800));
+          const h = Math.max(320, Math.floor(canvas.clientHeight || 520));
+          app.renderer.resolution = Math.min(window.devicePixelRatio || 1, 2);
+          app.renderer.resize(w, h);
+          center();
+          debugDot.x = 18;
+          debugDot.y = 18;
+        };
+        if (window.ResizeObserver) {
+          const ro = new ResizeObserver(resize);
+          ro.observe(container);
+        }
+        window.addEventListener('resize', resize);
+        resize();
       } catch(e){ fail(e && e.message ? e.message : String(e)); }
     })();
   </script>
