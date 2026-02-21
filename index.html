@@ -87,7 +87,8 @@
         antialias: false,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
-        resizeTo: canvas.parentElement
+        width: canvas.clientWidth || 800,
+        height: canvas.clientHeight || 520,
       });
 
     // Nearest-neighbor scaling for crisp pixels.
@@ -278,8 +279,14 @@
       fireGlow.alpha = 0.12 + (Math.sin(t*0.8)+1)*0.03;
     });
 
-    // Responsive
-    window.addEventListener('resize', ()=>{ centerWorld(); });
+    function resize() {
+      const w = canvas.clientWidth || 800;
+      const h = canvas.clientHeight || 520;
+      app.renderer.resize(w, h);
+      centerWorld();
+    }
+    window.addEventListener('resize', resize);
+    resize();
     })();
   </script>
 </body>
