@@ -70,20 +70,25 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.x/dist/pixi.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@8/dist/pixi.min.js"></script>
   <script>
-    // --- Pixi stage (true isometric geometry, asset-free v0.1) ---
-    const canvas = document.getElementById('stage');
+    (async function () {
+      // --- Pixi stage (true isometric geometry, asset-free v0.1) ---
+      const canvas = document.getElementById('stage');
+      if (!window.PIXI || !canvas) {
+        console.error('PIXI failed to load or canvas missing');
+        return;
+      }
 
-    const app = new PIXI.Application();
-    await app.init({
-      canvas,
-      backgroundAlpha: 0,
-      antialias: false,
-      resolution: window.devicePixelRatio || 1,
-      autoDensity: true,
-      resizeTo: canvas.parentElement
-    });
+      const app = new PIXI.Application();
+      await app.init({
+        canvas,
+        backgroundAlpha: 0,
+        antialias: false,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+        resizeTo: canvas.parentElement
+      });
 
     // Nearest-neighbor scaling for crisp pixels.
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
@@ -275,6 +280,7 @@
 
     // Responsive
     window.addEventListener('resize', ()=>{ centerWorld(); });
+    })();
   </script>
 </body>
 </html>
